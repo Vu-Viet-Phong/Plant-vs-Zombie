@@ -17,7 +17,7 @@ public abstract class Character {
     private int health;
     private int damage;
 
-    public Character(int x, int y, String name, int speed, int health, int damage) {
+    protected Character(int x, int y, String name, int speed, int health, int damage) {
         this.x = x;
         this.y = y;
         this.name = name;

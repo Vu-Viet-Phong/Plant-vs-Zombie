@@ -1,10 +1,10 @@
 package code.plant;
 
 import java.util.List;
+import code.Character;
 
-public abstract class Plant {
-    private int dx;
-    private int dy;
+public abstract class Plant extends Character {
+    
     protected static int health = 200;
     private List<Bullet> bullets;
     
