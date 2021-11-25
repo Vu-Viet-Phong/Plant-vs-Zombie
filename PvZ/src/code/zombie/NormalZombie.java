@@ -7,7 +7,7 @@ public class NormalZombie extends Zombie {
 
     public NormalZombie(int x, int y) {
         super(x, y, name, speed, health, damage);
-        loadImage("/src/images/normal_zombie.gif");
+        loadImage("/images/zombies/normal_zombie.gif");
         getImageDimensions();
     }
 }

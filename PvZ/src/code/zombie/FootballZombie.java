@@ -7,7 +7,7 @@ public class FootballZombie extends Zombie {
 
     public FootballZombie(int x, int y, String name, int speed, int health, int damage) {
         super(x, y, name, speed, health, damage);
-        loadImage("/src/images/normal_zombie.gif");
+        loadImage("/src/images/.gif");
         getImageDimensions();
     }
 }

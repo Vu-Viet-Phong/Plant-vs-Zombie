@@ -1,43 +1,19 @@
 package code.plant;
 
-import java.util.List;
 import code.Character;
 
-public abstract class Plant extends Character {
-    
+public class Plant extends Character {
     protected static int health = 200;
-    private List<Bullet> bullets;
+    protected static int speed = 0;
+    protected static int damage = 0;
     
-    protected Plant(int dx, int dy, int health) {
-        this.dx = dx;
-        this.dy = dy;
-        this.health = health;
+    protected Plant(int x, int y, String name, int speed, int health, int damage) {
+        super(x, y, name, speed, health, damage);
     }
 
-    public int getHealth() {
-        return health;
+    @Override
+    protected void move() {
+        // TODO Auto-generated method stub
     }
-
-    public void setHealth(int health) {
-        this.health = health;
-    }
-
-    public int getX() {
-        return x;
-    }
-
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
-    public void setY(int y) {
-        this.y = y;
-    }
-
-    public abstract void shoot();
 }
 

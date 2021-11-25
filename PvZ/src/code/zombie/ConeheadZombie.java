@@ -7,7 +7,7 @@ public class ConeheadZombie extends Zombie {
 
     public ConeheadZombie(int x, int y, String name, int speed, int health, int damage) {
         super(x, y, name, speed, health, damage);
-        loadImage("/src/images/normal_zombie.gif");
+        loadImage("/src/images/conehead_zombie.gif");
         getImageDimensions();
     }
 }
