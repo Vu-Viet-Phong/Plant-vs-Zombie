@@ -2,6 +2,9 @@ package code.zombie;
 
 import code.Character;
 
+/**
+ * @author Vu Viet Phong
+ */
 public class Zombie extends Character {
     protected static int speed = 1;
     protected static int health = 0;
