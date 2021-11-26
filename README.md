@@ -1,4 +1,4 @@
-# Plant-vs-Zombie
+# Plant-vs-Phong
 
 <img hight="250" width="400" alt="GIF" align="right" src="https://github.com/vtenpo/Plant-vs-Zombie/blob/main/PvZ/src/images/wallpaper.jpg">
 
