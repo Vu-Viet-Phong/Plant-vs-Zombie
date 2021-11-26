@@ -1,5 +1,8 @@
 package code.zombie;
 
+/**
+ * Truong Dang Khoa
+ */
 public class NormalZombie extends Zombie {
     private static String name = "NormalZombie";
     private static int health = 300;

@@ -1,5 +1,8 @@
 package code.zombie;
 
+/**
+ * Thong
+ */
 public class FootballZombie extends Zombie {
     private static String name = "FootballZombie";
     private static int health = 500;
