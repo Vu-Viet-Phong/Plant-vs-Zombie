@@ -14,7 +14,7 @@ public class Zombie extends Character {
     }
 
     @Override
-    protected void move() {
+    public void move() {
         x -= 1;
     }
 }

@@ -10,7 +10,7 @@ public class Bullet extends Character {
     }
 
     @Override
-    protected void move() {
+    public void move() {
         x += 1;
     }  
 }

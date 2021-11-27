@@ -28,8 +28,7 @@ public class Background extends JPanel
 
     private boolean ingame;
     private Timer timer;
-    private Plant[][] plants;
-    private List<Bullet> bullets;
+    private Plant plants;
     private List<Zombie> zombies;
 
     private final int DELAY = 10;
@@ -133,8 +132,10 @@ public class Background extends JPanel
     public void actionPerformed(ActionEvent e) {
         inGame();
         updatePlants();
+        updateBullets();
         updateZombies();
-        
+        checkCollisions();
+        repaint();
     }
 
     private void inGame() {
@@ -144,7 +145,24 @@ public class Background extends JPanel
     }
 
     private void updatePlants() {
-        if (plants) {}
+
+        if (plants.isVisible()) {
+            
+        }
+    }
+
+    private void updateBullets() {
+        List<Bullet> bullets = plants.getBullets();
+
+        for (int i = 0; i  < bullets.size(); i++) {
+            Bullet b = bullets.get(i);
+
+            if (b.isVisible()) {
+                b.move();
+            } else {
+                bullets.remove(i);
+            }
+        }
     }
 
     private void updateZombies() {
@@ -156,14 +174,37 @@ public class Background extends JPanel
         for (int i = 0; i < zombies.size(); i++) {
             Zombie z = zombies.get(i);
 
-            if (z.setVisible()) {
+            if (z.isVisible()) {
                 z.move();
             } else {
-                z.remove(i);
+                zombies.remove(i);
             }
         }
     }
 
+    public void checkCollisions() {
+        Rectangle r3 = plants.getBounds();
+
+        for (Zombie zombie : zombies) {
+            Rectangle r2 = zombie.getBounds();
+            if (r3.intersects(r2)) {
+                
+            }
+        }
+
+        List<Bullet> bs = plants.getBullets();
+
+        for (Bullet b : bs) {
+            Rectangle r1 = b.getBounds();
+            for (Zombie zombie : zombies) {
+                Rectangle r2 = zombie.getBounds();
+                if (r1.intersects(r2)) {
+                    
+                }
+            }
+        }
+    }
+    
     @Override
     public void mouseDragged(MouseEvent e) {
         // TODO Auto-generated method stub
