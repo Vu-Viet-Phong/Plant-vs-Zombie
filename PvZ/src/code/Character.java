@@ -14,7 +14,7 @@ public abstract class Character {
 
     private String name;
     private int speed;
-    private int health;
+    protected int health;
     private int damage;
 
     protected Character(int x, int y, String name, int speed, int health, int damage) {

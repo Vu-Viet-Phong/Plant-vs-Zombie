@@ -33,13 +33,11 @@ public class Background extends JPanel implements ActionListener {
     private final int DELAY = 10;
     private int[] rows;
     private int[] columns;
+    private Play.PlantType activePlantingBrush = Play.PlantType.None;
 
-    public Background() {
-        initUI();
-    }
-
-    private void initUI() {
+    public Background(JLabel sunScoreboard) {
         setLayout(null);
+        this.sunScoreboard = sunScoreboard;
         backgroundgImg = new ImageIcon(this.getClass().getResource("/images/background.png")).getImage();
 
         ingame = true;
@@ -96,6 +94,14 @@ public class Background extends JPanel implements ActionListener {
     public void setSunScore(int sunScore) {
         this.sunScore = sunScore;
         sunScoreboard.setText(String.valueOf(sunScore));
+    }
+
+    public Play.PlantType getActivePlantingBrush() {
+        return activePlantingBrush;
+    }
+
+    public void setActivePlantingBrush(Play.PlantType activePlantingBrush) {
+        this.activePlantingBrush = activePlantingBrush;
     }
 
     /**
@@ -233,5 +239,9 @@ public class Background extends JPanel implements ActionListener {
                 }
             }
         }
+    }
+
+    private void prepareLawnmowers() {
+        
     }
 }
