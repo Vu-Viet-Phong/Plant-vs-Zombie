@@ -132,6 +132,7 @@ public class Background extends JPanel
     @Override
     public void actionPerformed(ActionEvent e) {
         inGame();
+        updatePlants();
         updateZombies();
         
     }
@@ -142,10 +143,24 @@ public class Background extends JPanel
         }
     }
 
+    private void updatePlants() {
+        if (plants) {}
+    }
+
     private void updateZombies() {
         if (zombies.isEmpty()) {
             ingame = false;
             return;
+        }
+
+        for (int i = 0; i < zombies.size(); i++) {
+            Zombie z = zombies.get(i);
+
+            if (z.setVisible()) {
+                z.move();
+            } else {
+                z.remove(i);
+            }
         }
     }
 
