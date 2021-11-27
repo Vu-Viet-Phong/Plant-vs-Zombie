@@ -1,4 +1,4 @@
-package code.zombie;
+package code.plant;
 
 /**
  * @author Đinh Bình Thanh Thông
