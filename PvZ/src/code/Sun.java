@@ -11,6 +11,4 @@ public class Sun {
     public Sun() {
         image = new ImageIcon(this.getClass().getResource("/images/sun.png")).getImage();
     }
-
-    
 }
