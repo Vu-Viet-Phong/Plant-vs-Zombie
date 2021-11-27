@@ -55,7 +55,7 @@ public class Wallpaper extends JFrame implements ActionListener {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(818, 818, 818)
                         .addComponent(startImg, GroupLayout.PREFERRED_SIZE, 199, GroupLayout.PREFERRED_SIZE)))
-                    .addGap(252, 252, 252))
+                        .addGap(252, 252, 252))
         );
 
         jPanel1Layout.setVerticalGroup(

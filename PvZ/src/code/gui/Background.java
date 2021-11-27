@@ -2,11 +2,11 @@ package code.gui;
 
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,8 +19,7 @@ import code.bullet.Bullet;
 import code.plant.Plant;
 import code.zombie.Zombie;
 
-public class Background extends JPanel 
-    implements ActionListener, MouseMotionListener {
+public class Background extends JPanel implements ActionListener {
     private Image backgroundgImg;
 
     private int sunScore;
@@ -41,13 +40,14 @@ public class Background extends JPanel
 
     private void initUI() {
         setLayout(null);
-        backgroundgImg = new ImageIcon(this.getClass().getResource("/images/backyard.jpg")).getImage();
-        
-        ingame = true;
-        initZombies();
+        backgroundgImg = new ImageIcon(this.getClass().getResource("/images/background.png")).getImage();
 
-        timer = new Timer(DELAY, this);
-        timer.start();
+        ingame = true;
+
+        // initZombies();
+
+        // timer = new Timer(DELAY, this);
+        // timer.start();
     }
 
     public void initZombies() {
@@ -56,7 +56,37 @@ public class Background extends JPanel
 
     @Override
     public void paintComponent(Graphics g) {
-        g.drawImage(backgroundgImg, 0, 0, this.getWidth(), this.getHeight(), this);
+        super.paintComponent(g);
+
+        if (ingame) {
+            g.drawImage(backgroundgImg, 0, 0, this.getWidth(), this.getHeight(), this);
+            drawObjects(g);
+        } 
+
+        Toolkit.getDefaultToolkit().sync();
+    }
+
+    private void drawObjects(Graphics g) {
+        if (plants.isVisible()) {
+            g.drawImage(plants.getImage(), plants.getX(), plants.getY(), this);
+        }
+
+        List<Bullet> bs = plants.getBullets();
+        for (Bullet bullet : bs) {
+            if (bullet.isVisible()) {
+                g.drawImage(bullet.getImage(), bullet.getX(), bullet.getY(), this);
+            }
+        }
+
+        for (Zombie zombie : zombies) {
+            if (zombie.isVisible()) {
+                g.drawImage(zombie.getImage(), zombie.getX(), zombie.getY(), this);
+            }
+        }
+    }
+
+    private void drawGameOver(Graphics g) {
+        
     }
 
     public int getSunScore() {
@@ -199,20 +229,9 @@ public class Background extends JPanel
             for (Zombie zombie : zombies) {
                 Rectangle r2 = zombie.getBounds();
                 if (r1.intersects(r2)) {
-                    
+
                 }
             }
         }
-    }
-    
-    @Override
-    public void mouseDragged(MouseEvent e) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void mouseMoved(MouseEvent e) {
-        // TODO Auto-generated method stub
     }
 }

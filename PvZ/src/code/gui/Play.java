@@ -11,8 +11,9 @@ public class Play extends JFrame {
     private void initUI() {
         add(new Background());
         
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        setResizable(false);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
         pack();
     }
