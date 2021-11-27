@@ -1,7 +1,7 @@
 package code.zombie;
 
 /**
- * Thong
+ * @author Đinh Bình Thanh Thông
  */
 public class FootballZombie extends Zombie {
     private static String name = "FootballZombie";

@@ -1,5 +1,8 @@
 package code.plant;
 
+/**
+ * @author Đinh Bình Thanh Thông
+ */
 public class Wallnut extends Plant {
     private static String name = "Wallnut";
     private static int health = 500;
