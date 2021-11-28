@@ -10,5 +10,6 @@ public class FootballZombie extends Zombie {
         setHealth(500);
         setDamage(75);
         loadImage("/images/zombies/football_zombie.gif");
+        getImageDimensions();
     }
 }

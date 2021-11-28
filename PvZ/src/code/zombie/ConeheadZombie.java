@@ -9,5 +9,12 @@ public class ConeheadZombie extends Zombie {
         setHealth(400);
         setDamage(60);
         loadImage("/images/zombies/conehead_zombie.gif");
+        getImageDimensions();
+    }
+
+    public static void main(String[] args) {
+        Zombie z = new ConeheadZombie(5, 5);
+        System.out.println(z.getImage());
+        System.out.println(z.isVisible());
     }
 }

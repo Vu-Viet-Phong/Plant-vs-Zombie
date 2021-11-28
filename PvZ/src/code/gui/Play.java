@@ -7,8 +7,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 
 import code.Cards;
-import code.Lawnmower;
-import code.gui.Background;
 
 public class Play extends JFrame {
     enum PlantType {
@@ -24,7 +22,6 @@ public class Play extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(null);
         setResizable(false);
-        setVisible(true);
 
         JLabel sun = new JLabel("SUN");
         sun.setIcon(new ImageIcon(getClass().getResource("/images/sun_score.png")));
@@ -75,7 +72,7 @@ public class Play extends JFrame {
 
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
-            new Play();
+            new Play().setVisible(true);
         });
     }
 }

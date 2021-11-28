@@ -9,5 +9,6 @@ public class NormalZombie extends Zombie {
         setHealth(300);
         setDamage(50);
         loadImage("/images/zombies/normal_zombie.gif");
+        getImageDimensions();
     }
 }

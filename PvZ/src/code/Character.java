@@ -8,8 +8,8 @@ import javax.swing.ImageIcon;
  * @author Vu Viet Phong
  */
 public abstract class Character {
-    protected static int x;
-    protected static int y;
+    protected int x;
+    protected int y;
     protected int width;
     protected int height;
     protected boolean visible;
@@ -23,6 +23,11 @@ public abstract class Character {
 
     protected void loadImage(String imageName) {
         image = new ImageIcon(this.getClass().getResource(imageName)).getImage();
+    }
+
+    protected void getImageDimensions() {
+        width = image.getWidth(null);
+        height = image.getHeight(null);
     }
 
     public int getX() {
