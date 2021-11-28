@@ -1,5 +1,9 @@
 package code.zombie;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 import code.Character;
 
 /**
@@ -38,21 +42,31 @@ public class Zombie extends Character {
         Zombie.damage = damage;
     }
 
-    public static Zombie getZombie(String type) {
+    public static Zombie getZombie(int type) {
         Zombie z = new Zombie(x, y);
         
         switch (type) {
-            case "NormalZombie":
+            case 1:
                 z = new NormalZombie(z.getX(), z.getY());
                 break;
-            case "ConeHeadZombie":
+            case 2:
                 z = new ConeheadZombie(z.getX(), z.getY());
                 break;
-            case "FootballZombie":
+            case 3:
                 z = new FootballZombie(z.getX(), z.getY());
                 break;
         }
 
         return z;
+    }
+
+    public void randomZombie(int N) {
+        List<Zombie> z = new ArrayList<>();
+        Random rd = new Random();
+
+        for (int i = 0; i < N; i++) {
+            int num = rd.nextInt(3) + 1;
+            z.add(getZombie(num));
+        }
     }
 }

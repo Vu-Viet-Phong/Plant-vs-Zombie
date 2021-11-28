@@ -4,6 +4,9 @@ import java.awt.Image;
 import java.awt.Rectangle;
 import javax.swing.ImageIcon;
 
+/**
+ * @author Vu Viet Phong
+ */
 public abstract class Character {
     protected static int x;
     protected static int y;
