@@ -20,6 +20,9 @@ import code.plant.*;
 import code.zombie.Zombie;
 
 public class Background extends JPanel implements MouseMotionListener {
+    private final int BG_WIDTH = 1800;
+    private final int BG_HEIGHT = 1000;
+
     private Image bgImg;
     private Image lmImg;
 
@@ -41,7 +44,7 @@ public class Background extends JPanel implements MouseMotionListener {
     private int mouseX, mouseY;
 
     public Background(JLabel sunScoreboard) {
-        setSize(1800, 1000);
+        setSize(BG_WIDTH, BG_HEIGHT);
         setLayout(null);
         this.sunScoreboard = sunScoreboard;
         setSunScore(150);
@@ -58,40 +61,6 @@ public class Background extends JPanel implements MouseMotionListener {
             add(a, new Integer(0));
         }
 
-        activeSuns = new ArrayList<>();
-
-        redrawTimer = new Timer(25, (ActionEvent e) -> {
-            repaint();
-        });
-        redrawTimer.start();
-
-        advancerTimer = new Timer(60, (ActionEvent e) -> advance());
-        advancerTimer.start();
-
-        sunProducer = new Timer(5000, (ActionEvent e) -> {
-            Random rnd = new Random();
-            Sun sta = new Sun(this, rnd.nextInt(800) + 100, 0, rnd.nextInt(300) + 200);
-            activeSuns.add(sta);
-            add(sta, new Integer(1));
-        });
-        sunProducer.start();
-
-        zombieProducer = new Timer(7000, (ActionEvent e) -> {
-            Random rnd = new Random();
-            LevelData lvl = new LevelData();
-            String[] Level = lvl.LEVEL_CONTENT[Integer.parseInt(lvl.LEVEL_NUMBER) - 1];
-            int[][] LevelValue = lvl.LEVEL_VALUE[Integer.parseInt(lvl.LEVEL_NUMBER) - 1];
-            int l = rnd.nextInt(5);
-            int t = rnd.nextInt(100);
-            Zombie z = null;
-            for (int i = 0; i < LevelValue.length; i++) {
-                if (t >= LevelValue[i][0] && t <= LevelValue[i][1]) {
-                    z = Zombie.getZombie(Level[i], GamePanel.this, l);
-                }
-            }
-            laneZombies.get(l).add(z);
-        });
-        zombieProducer.start();
     }
 
     private void advance() {

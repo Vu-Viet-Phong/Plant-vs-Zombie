@@ -11,14 +11,13 @@ import java.awt.event.MouseListener;
 
 public class Collider extends JPanel implements MouseListener {
     private ActionListener al;
-
+    public Plant assignedPlant;
+    
     public Collider() {
         setOpaque(false);
         addMouseListener(this);
         setSize(100, 120);
     }
-
-    public Plant assignedPlant;
 
     public void setPlant(Plant p) {
         assignedPlant = p;
@@ -36,15 +35,16 @@ public class Collider extends JPanel implements MouseListener {
         this.al = al;
     }
 
-
     @Override
     public void mouseClicked(MouseEvent e) {
-
+        // TODO Auto-generated method stub
+        
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
-
+        // TODO Auto-generated method stub
+        
     }
 
     @Override
@@ -56,12 +56,14 @@ public class Collider extends JPanel implements MouseListener {
 
     @Override
     public void mouseEntered(MouseEvent e) {
-
+        // TODO Auto-generated method stub
+        
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
-
+        // TODO Auto-generated method stub
+        
     }
 }
 
