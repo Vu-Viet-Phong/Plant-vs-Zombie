@@ -1,44 +1,50 @@
 package code;
 
-import java.awt.Image;
-import java.awt.Graphics;
+import javax.swing.*;
+
+import code.plant.Plant;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import javax.swing.JPanel;
 
-/**
- * @author Vu Viet Phong
- */
-public class Cards extends JPanel implements MouseListener {
-    private Image img;
+public class Collider extends JPanel implements MouseListener {
     private ActionListener al;
 
-    public Cards(Image img) {
-        this.img = img;
-        setSize(234, 150);
+    public Collider() {
+        setOpaque(false);
         addMouseListener(this);
+        setSize(100, 120);
+    }
+
+    public Plant assignedPlant;
+
+    public void setPlant(Plant p) {
+        assignedPlant = p;
+    }
+
+    public void removePlant() {
+        assignedPlant = null;
+    }
+
+    public boolean isInsideCollider(int tx) {
+        return (tx > getLocation().x) && (tx < getLocation().x + 100);
     }
 
     public void setAction(ActionListener al) {
         this.al = al;
     }
 
-    @Override
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        g.drawImage(img, 0, 0, null);
-    }
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        // TODO Auto-generated method stub
+
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
-        // TODO Auto-generated method stub   
+
     }
 
     @Override
@@ -50,11 +56,12 @@ public class Cards extends JPanel implements MouseListener {
 
     @Override
     public void mouseEntered(MouseEvent e) {
-        // TODO Auto-generated method stub    
+
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
-        // TODO Auto-generated method stub
+
     }
 }
+

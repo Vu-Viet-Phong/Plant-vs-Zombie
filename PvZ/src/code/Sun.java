@@ -37,19 +37,6 @@ public class Sun extends JPanel implements MouseListener {
         g.drawImage(image, 0, 0, null);
     }
 
-    public void act() {
-        if (locY < endY) {
-            locY += 4;
-        } else {
-            destruct--;
-            if (destruct < 0) {
-                gp.remove(this);
-                gp.getActiveSuns().remove(this);
-            }
-        }
-        setLocation(locX, locY);
-    }
-
     @Override
     public void mouseClicked(MouseEvent e) {
         // TODO Auto-generated method stub

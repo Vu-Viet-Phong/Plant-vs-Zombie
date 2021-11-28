@@ -1,90 +1,130 @@
 package code.gui;
 
 import java.awt.Image;
-import java.awt.Rectangle;
-import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
-import java.util.List;
-
+import java.util.Random;
+import java.awt.event.MouseEvent;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
+import code.Collider;
+import code.Sun;
 import code.bullet.Bullet;
-import code.plant.Plant;
+import code.plant.*;
 import code.zombie.Zombie;
 
-public class Background extends JPanel implements ActionListener {
-    private Image backgroundgImg;
+public class Background extends JPanel implements MouseMotionListener {
+    private Image bgImg;
+    private Image lmImg;
 
     private int sunScore;
     private JLabel sunScoreboard;
 
-    private boolean ingame;
-    private Timer timer;
-    private Plant plants;
-    private List<Zombie> zombies;
+    private Collider[] colliders;
 
-    private final int DELAY = 10;
-    private int[] rows;
-    private int[] columns;
-    private Play.PlantType activePlantingBrush = Play.PlantType.None;
+    private ArrayList<ArrayList<Zombie>> laneZombies;
+    private ArrayList<ArrayList<Bullet>> lanePlants;
+    private ArrayList<Sun> activeSuns;
+
+    private Timer redrawTimer;
+    private Timer advancerTimer;
+    private Timer sunProducer;
+    private Timer zombieProducer;
+    
+    private Play.PlantType active = Play.PlantType.None;
+    private int mouseX, mouseY;
 
     public Background(JLabel sunScoreboard) {
+        setSize(1800, 1000);
         setLayout(null);
         this.sunScoreboard = sunScoreboard;
-        backgroundgImg = new ImageIcon(this.getClass().getResource("/images/background.png")).getImage();
+        setSunScore(150);
 
-        ingame = true;
+        bgImg = new ImageIcon(this.getClass().getResource("/images/background.png")).getImage();
+        lmImg = new ImageIcon(this.getClass().getResource("/images/items/Lawn_Mower.png")).getImage();
+        
+        colliders = new Collider[45];
+        for (int i = 0; i < 45; i++) {
+            Collider a = new Collider();
+            a.setLocation(44 + (i % 9) * 100, 109 + (i / 9) * 120);
+            a.setAction(new PlantActionListener((i % 9), (i / 9)));
+            colliders[i] = a;
+            add(a, new Integer(0));
+        }
 
-        // initZombies();
+        activeSuns = new ArrayList<>();
 
-        // timer = new Timer(DELAY, this);
-        // timer.start();
+        redrawTimer = new Timer(25, (ActionEvent e) -> {
+            repaint();
+        });
+        redrawTimer.start();
+
+        advancerTimer = new Timer(60, (ActionEvent e) -> advance());
+        advancerTimer.start();
+
+        sunProducer = new Timer(5000, (ActionEvent e) -> {
+            Random rnd = new Random();
+            Sun sta = new Sun(this, rnd.nextInt(800) + 100, 0, rnd.nextInt(300) + 200);
+            activeSuns.add(sta);
+            add(sta, new Integer(1));
+        });
+        sunProducer.start();
+
+        zombieProducer = new Timer(7000, (ActionEvent e) -> {
+            Random rnd = new Random();
+            LevelData lvl = new LevelData();
+            String[] Level = lvl.LEVEL_CONTENT[Integer.parseInt(lvl.LEVEL_NUMBER) - 1];
+            int[][] LevelValue = lvl.LEVEL_VALUE[Integer.parseInt(lvl.LEVEL_NUMBER) - 1];
+            int l = rnd.nextInt(5);
+            int t = rnd.nextInt(100);
+            Zombie z = null;
+            for (int i = 0; i < LevelValue.length; i++) {
+                if (t >= LevelValue[i][0] && t <= LevelValue[i][1]) {
+                    z = Zombie.getZombie(Level[i], GamePanel.this, l);
+                }
+            }
+            laneZombies.get(l).add(z);
+        });
+        zombieProducer.start();
     }
 
-    public void initZombies() {
-        zombies = new ArrayList<>();
+    private void advance() {
+        for (int i = 0; i < 5; i++) {
+            for (Zombie z : laneZombies.get(i)) {
+                z.advance();
+            }
+
+            for (int j = 0; j < lanePeas.get(i).size(); j++) {
+                Bullet p = lanePeas.get(i).get(j);
+                p.advance();
+            }
+
+        }
+
+        for (int i = 0; i < activeSuns.size(); i++) {
+            activeSuns.get(i).advance();
+        }
     }
 
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-
-        if (ingame) {
-            g.drawImage(backgroundgImg, 0, 0, this.getWidth(), this.getHeight(), this);
-            drawObjects(g);
-        } 
-
-        Toolkit.getDefaultToolkit().sync();
+        doDrawing(g);
     }
 
-    private void drawObjects(Graphics g) {
-        if (plants.isVisible()) {
-            g.drawImage(plants.getImage(), plants.getX(), plants.getY(), this);
-        }
+    private void doDrawing(Graphics g) {
+        g.drawImage(bgImg, 0, 0, this.getWidth(), this.getHeight(), this);
 
-        List<Bullet> bs = plants.getBullets();
-        for (Bullet bullet : bs) {
-            if (bullet.isVisible()) {
-                g.drawImage(bullet.getImage(), bullet.getX(), bullet.getY(), this);
-            }
+        int[] cols = {210, 366, 522, 678, 834}; 
+        for (int i = 0; i < 5; i++) {
+            g.drawImage(lmImg, 330, cols[i], 100, 80, this);
         }
-
-        for (Zombie zombie : zombies) {
-            if (zombie.isVisible()) {
-                g.drawImage(zombie.getImage(), zombie.getX(), zombie.getY(), this);
-            }
-        }
-    }
-
-    private void drawGameOver(Graphics g) {
-        
     }
 
     public int getSunScore() {
@@ -95,153 +135,56 @@ public class Background extends JPanel implements ActionListener {
         this.sunScore = sunScore;
         sunScoreboard.setText(String.valueOf(sunScore));
     }
+    
+    private class PlantActionListener implements ActionListener {
+
+        int x, y;
+
+        public PlantActionListener(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (active == Play.PlantType.Sunflower) {
+                if (getSunScore() >= 50) {
+                    colliders[x + y * 9].setPlant(new SunFlower(x, y));
+                    setSunScore(getSunScore() - 50);
+                }
+            }
+            if (active == Play.PlantType.Peashooter) {
+                if (getSunScore() >= 100) {
+                    colliders[x + y * 9].setPlant(new PeaShooter(x, y));
+                    setSunScore(getSunScore() - 100);
+                }
+            }
+
+            if (active == Play.PlantType.Wallnut) {
+                if (getSunScore() >= 175) {
+                    colliders[x + y * 9].setPlant(new Wallnut(x, y));
+                    setSunScore(getSunScore() - 175);
+                }
+            }
+            active = Play.PlantType.None;
+        }
+    }
 
     public Play.PlantType getActivePlantingBrush() {
-        return activePlantingBrush;
+        return active;
     }
 
-    public void setActivePlantingBrush(Play.PlantType activePlantingBrush) {
-        this.activePlantingBrush = activePlantingBrush;
-    }
-
-    /**
-     * Possible Row Cordinates
-     */
-    private void setRowsCoordinates() {
-        rows = new int[5];
-        rows[0] = 267;
-        rows[1] = 446;
-        rows[2] = 642;
-        rows[3] = 816;
-        rows[4] = 1010;
-    }
-    
-    /**
-     * Possible Column Cordinates
-     */
-    private void setColumnsCoordinates() {
-        columns = new int[9];
-        columns[0] = 783;
-        columns[1] = 924;
-        columns[2] = 1066;
-        columns[3] = 1208;
-        columns[4] = 1350;
-        columns[5] = 1487;
-        columns[6] = 1633;
-        columns[7] = 1775;
-        columns[8] = 1916;
-    }
-
-    /**
-     * Ensures that the user can't randomly place plants in the world but only in the grid.
-     */
-    public int returnGridRowPosition(int y) {
-        int row;
-        int[] rowGrid = {240, 434, 626, 822, 1011, 1205};
-        
-        for (row = 0; row < 5; row += 1) {
-            if (y > rowGrid[row] && y < rowGrid[row + 1]) {
-                return rows[row];
-            }
-        }
-
-        return -1;
-    }
-    
-    /**
-     * Ensures that the user can't randomly place plants in the world but only in the grid.
-     */
-    public int returnGridColumnPosition(int x) {
-        int column;
-        int[] columnGrid = {469, 628, 787, 945, 1110, 1269, 1429, 1589, 1749, 1913};
-
-        for (column = 0; column < 9; column += 1) {
-            if(x > columnGrid[column] && x < columnGrid[column + 1]) {
-                return columns[column];
-            }
-        }
-
-        return -1;
+    public void setActivePlantingBrush(Play.PlantType active) {
+        this.active = active;
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-        inGame();
-        updatePlants();
-        updateBullets();
-        updateZombies();
-        checkCollisions();
-        repaint();
+    public void mouseDragged(MouseEvent e) {
+        // TODO Auto-generated method stub
     }
 
-    private void inGame() {
-        if (!ingame) {
-            timer.stop();
-        }
-    }
-
-    private void updatePlants() {
-
-        if (plants.isVisible()) {
-            
-        }
-    }
-
-    private void updateBullets() {
-        List<Bullet> bullets = plants.getBullets();
-
-        for (int i = 0; i  < bullets.size(); i++) {
-            Bullet b = bullets.get(i);
-
-            if (b.isVisible()) {
-                b.move();
-            } else {
-                bullets.remove(i);
-            }
-        }
-    }
-
-    private void updateZombies() {
-        if (zombies.isEmpty()) {
-            ingame = false;
-            return;
-        }
-
-        for (int i = 0; i < zombies.size(); i++) {
-            Zombie z = zombies.get(i);
-
-            if (z.isVisible()) {
-                z.move();
-            } else {
-                zombies.remove(i);
-            }
-        }
-    }
-
-    public void checkCollisions() {
-        Rectangle r3 = plants.getBounds();
-
-        for (Zombie zombie : zombies) {
-            Rectangle r2 = zombie.getBounds();
-            if (r3.intersects(r2)) {
-                
-            }
-        }
-
-        List<Bullet> bs = plants.getBullets();
-
-        for (Bullet b : bs) {
-            Rectangle r1 = b.getBounds();
-            for (Zombie zombie : zombies) {
-                Rectangle r2 = zombie.getBounds();
-                if (r1.intersects(r2)) {
-
-                }
-            }
-        }
-    }
-
-    private void prepareLawnmowers() {
-        
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        mouseX = e.getX();
+        mouseY = e.getY();
     }
 }
