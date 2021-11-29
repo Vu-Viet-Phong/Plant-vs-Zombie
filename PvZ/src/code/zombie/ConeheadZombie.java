@@ -6,6 +6,7 @@ package code.zombie;
 public class ConeheadZombie extends Zombie {
     public ConeheadZombie(int x, int y) {
         super(x, y);
+        setSpeed(6);
         setHealth(400);
         setDamage(60);
         loadImage("/images/zombies/conehead_zombie.gif");

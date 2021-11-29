@@ -16,12 +16,11 @@ import javax.swing.Timer;
 import code.zombie.Zombie;
 
 public class Background extends JPanel implements ActionListener {
-    private final int BG_WIDTH = 1800;
+    private final int BG_WIDTH = 1801;
     private final int BG_HEIGHT = 1000;
 
     private Image bgImg;
     private Image lmImg;
-    private Image zImg;
 
     private int sunScore;
     private JLabel sunScoreboard;
@@ -43,14 +42,14 @@ public class Background extends JPanel implements ActionListener {
 
         bgImg = new ImageIcon(this.getClass().getResource("/images/background.png")).getImage();
         lmImg = new ImageIcon(this.getClass().getResource("/images/items/Lawn_Mower.png")).getImage();
-        zImg = new ImageIcon(this.getClass().getResource("/images/zombies/conehead_zombie.gif")).getImage();
+        
         setRowsCoordinates();
         setColumnsCoordinates();
-
-        initZombies(40);
-
+        
         timer = new Timer(DELAY, this);
         timer.start();
+
+        initZombies(50);
     }
 
     public void initZombies(int n) {
@@ -63,7 +62,7 @@ public class Background extends JPanel implements ActionListener {
             int num = rd.nextInt(5);
             listZombies[i] = rows[num];
         }
-
+        
         for (int i = 0; i < n; i++) {
             int num = rd.nextInt(3) + 1;
             zombies.add(Zombie.getZombie(num, listZombies[i]));
@@ -83,18 +82,17 @@ public class Background extends JPanel implements ActionListener {
 
     private void doDrawing(Graphics g) {
         g.drawImage(bgImg, 0, 0, this.getWidth(), this.getHeight(), this);
-        g.drawImage(zImg, 1700, 267, this);
-        int[] cols = {210, 366, 522, 678, 834}; 
+
+        int[] row = {210, 366, 522, 678, 834}; 
         for (int i = 0; i < 5; i++) {
-            g.drawImage(lmImg, 330, cols[i], 100, 80, this);
+            g.drawImage(lmImg, 330, row[i], 100, 80, this);
         }
         
-        /*
         for (Zombie zombie : zombies) {
             if (zombie.isVisible()) {
-                g.drawImage(zombie.getImage(), 1800, zombie.getY(), this);
+                g.drawImage(zombie.getImage(), zombie.getX(), zombie.getY(), null);
             }
-        }*/
+        }
     }
 
     public int getSunScore() {
@@ -120,11 +118,11 @@ public class Background extends JPanel implements ActionListener {
     // Possible Row Cordinates
     private void setRowsCoordinates() {
         rows = new int[5];
-        rows[0] = 267;
-        rows[1] = 446;
-        rows[2] = 642;
-        rows[3] = 816;
-        rows[4] = 1010;
+        rows[0] = 150;
+        rows[1] = 300;
+        rows[2] = 470;
+        rows[3] = 620;
+        rows[4] = 780;
     }
 
     // Possible Column Cordinates
@@ -173,6 +171,7 @@ public class Background extends JPanel implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         inGame();
         updateZombies();
+        repaint();
     }
 
     private void inGame() {
