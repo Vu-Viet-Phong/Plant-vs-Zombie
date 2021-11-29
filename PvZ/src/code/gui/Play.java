@@ -1,6 +1,5 @@
 package code.gui;
 
-import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import javax.swing.ImageIcon;
@@ -34,7 +33,7 @@ public class Play extends JFrame {
         bg.setLocation(0, 0);
 
         getLayeredPane().add(bg, new Integer(0));
-        getLayeredPane().add(sun, new Integer(1));
+        getLayeredPane().add(sun, new Integer(2));
 
         Cards sunflower = new Cards(new ImageIcon(this.getClass().getResource("/images/cards/Sunflower.png")).getImage());
         sunflower.setLocation(0, 100);

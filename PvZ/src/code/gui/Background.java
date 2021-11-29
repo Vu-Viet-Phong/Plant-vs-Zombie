@@ -7,7 +7,6 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 import java.util.ArrayList;
@@ -16,10 +15,15 @@ import java.util.Random;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
+import java.awt.Font;
 import javax.swing.Timer;
+import javax.swing.SwingConstants;
 
+import code.Collider;
 import code.Lawnmower;
+import code.Sun;
 import code.bullet.Bullet;
 import code.plant.*;
 import code.zombie.*;
@@ -27,7 +31,7 @@ import code.zombie.*;
 /**
  * @author Vu Viet Phong
  */
-public class Background extends JPanel implements ActionListener {
+public class Background extends JLayeredPane implements MouseMotionListener {
     private final int BG_WIDTH = 1300;
     private final int BG_HEIGHT = 769;
 
@@ -37,7 +41,11 @@ public class Background extends JPanel implements ActionListener {
     private int sunScore;
     private JLabel sunScoreboard;
 
-    private Timer timer;
+    // private Timer timer;
+    private Timer sunProducer;
+    private Timer redrawTimer;
+    private Timer advancerTimer;
+    private Timer zombieProducer;
 
     private final int DELAY = 100;
     private boolean ingame;
@@ -50,13 +58,24 @@ public class Background extends JPanel implements ActionListener {
     private int selectedButton = -1;
     private Boolean planted = false;
 
-    private Plant plant;
-    private Plant[][] plants;
-    private List<Zombie> zombies;
+    private Collider[][] plants;
+    private ArrayList<Zombie> zombies;
+    private ArrayList<Sun> activeSuns;
     private Lawnmower lm;
     private int[] rowlm = {150, 270, 390, 510, 630}; 
     private Play.PlantType active = Play.PlantType.None;
     private Control control;
+
+    public int getSunScore() {
+        return sunScore;
+    }
+
+    public void setSunScore(int sunScore) {
+        this.sunScore = sunScore;
+        sunScoreboard.setText(String.valueOf(sunScore));
+        sunScoreboard.setFont(new Font("Open Sans", 1, 30));
+        sunScoreboard.setHorizontalTextPosition(SwingConstants.CENTER);
+    }
 
     public Background(JLabel sunScoreboard) {
         setSize(BG_WIDTH, BG_HEIGHT);
@@ -72,43 +91,59 @@ public class Background extends JPanel implements ActionListener {
         
         setRowsCoordinates();
         setColumnsCoordinates();
-        
-        timer = new Timer(DELAY, this);
-        timer.start();
 
-        // control = new Control();
-
-        // initPlants();
-        initZombies(5);
-    }
-
-    public void initPlants() {
-        int x = (xMouse - 550) / 160;
-        int y = (yMouse - 330) / 191;
         int plantRow = returnGridRowPosition(xMouse);
         int plantCol = returnGridColumnPosition(yMouse);
 
-        if (planted && plantRow != 1 && plantCol != 1) {
-            if (selectedButton == 0) {
-                plants[y][x] = new SunFlower(xMouse, yMouse);
-                sunScore -= 50;
-            } else if (selectedButton == 1) {
-                plants[y][x] = new PeaShooter(xMouse, yMouse);
-                sunScore -= 100;
-            } else if (selectedButton == 2) {
-                plants[y][x] = new PeaShooter(xMouse, yMouse);
-                sunScore -= 200;
-            } else if (selectedButton == 3) {
-                plants[y][x] = new Torchwood(xMouse, yMouse);
-                sunScore -= 175;
-            } else {
-                plants[y][x] = new Wallnut(xMouse, yMouse);
-                sunScore -= 50;
-            } 
+        int x = (plantRow - 90) / 120;
+        int y = (plantCol - 350) / 100;
+
+        plants = new Collider[5][9];
+        for (int i = 0; i < 5; i++) {  
+            for (int j = 0; j < 9; j++) {
+                Collider a = new Collider();
+                a.setLocation(rows[i], columns[j]);
+                a.setAction(new Control(x, y));
+                plants[i][j] = a;
+                add(a, new Integer(0));
+            }
         }
 
-        selectedButton = -1;
-        planted = false;
+
+        activeSuns = new ArrayList<>();
+        redrawTimer = new Timer(25, (ActionEvent e) -> {
+            repaint();
+        });
+        redrawTimer.start();
+
+        advancerTimer = new Timer(60, (ActionEvent e) -> advance());
+        advancerTimer.start();
+
+        sunProducer = new Timer(5000, (ActionEvent e) -> {
+            Random rnd = new Random();
+            Sun sta = new Sun(rnd.nextInt(800) + 100, 0, rnd.nextInt(300) + 200, this);
+            activeSuns.add(sta);
+            add(sta, new Integer(1));
+        });
+        sunProducer.start();
+
+        zombieProducer = new Timer(7000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                updateZombies();
+            }
+        });
+        zombieProducer.start();
+
+        initZombies(5);
+    }
+
+    private void advance() {
+        updateZombies();
+
+        for (int i = 0; i < activeSuns.size(); i++) {
+            activeSuns.get(i).advance();
+        }
     }
 
     public void initZombies(int n) {
@@ -153,44 +188,36 @@ public class Background extends JPanel implements ActionListener {
     private void doDrawing(Graphics g) {
         g.drawImage(bgImg, 0, 0, this.getWidth(), this.getHeight(), this);
 
-        
+        // Draw lawnmover
         for (int i = 0; i < 5; i++) {
             g.drawImage(lmImg, 240, rowlm[i], 100, 80, this);
         }
-
-        /*
+        
         //Draw plants
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 9; j++) {
-                plant = plants[i][j];
-                if (plant instanceof SunFlower) {
-                    g.drawImage(plant.getImage(), plant.getX(), plant.getY(), 75, 75, this);
-                } else if (plant instanceof PeaShooter) {
-                    g.drawImage(plant.getImage(), plant.getX(), plant.getY(), 75, 75, this);
-                } else if (plant instanceof Torchwood) {
-                    g.drawImage(plant.getImage(), plant.getX(), plant.getY(), 100, 100, this);
-                } else {
-                    g.drawImage(plant.getImage(), plant.getX(), plant.getY(), 75, 75, this);
+                Collider c = plants[i][j];
+                if (c.assignedPlant != null) {
+                    Plant plant = c.assignedPlant;
+                    if (plant instanceof SunFlower) {
+                        g.drawImage(plant.getImage(), plant.getX(), plant.getY(), 75, 75, this);
+                    } else if (plant instanceof PeaShooter) {
+                        g.drawImage(plant.getImage(), plant.getX(), plant.getY(), 75, 75, this);
+                    } else if (plant instanceof Torchwood) {
+                        g.drawImage(plant.getImage(), plant.getX(), plant.getY(), 100, 100, this);
+                    } else {
+                        g.drawImage(plant.getImage(), plant.getX(), plant.getY(), 75, 75, this);
+                    }
                 }
-            }{150, 270, 390, 510, 630}
+            }
         }
-        */
 
         //Draw zombies
         for (Zombie zombie : zombies) {
             if (zombie.isVisible()) {
-                g.drawImage(zombie.getImage(), zombie.getX(), zombie.getY(), this);
+                g.drawImage(zombie.getImage(), zombie.getX(), zombie.getY(), null);
             }
         }
-    }
-
-    public int getSunScore() {
-        return sunScore;
-    }
-
-    public void setSunScore(int sunScore) {
-        this.sunScore = sunScore;
-        sunScoreboard.setText(String.valueOf(sunScore));
     }
     
     public Play.PlantType getActivePlantingBrush() {
@@ -214,21 +241,21 @@ public class Background extends JPanel implements ActionListener {
     // Possible Column Cordinates
     private void setColumnsCoordinates() {
         columns = new int[9];
-        columns[0] = 550;
-        columns[1] = 710;
-        columns[2] = 870;
-        columns[3] = 1030;
-        columns[4] = 1190;
-        columns[5] = 1350;
-        columns[6] = 1510;
-        columns[7] = 1670;
-        columns[8] = 1830;
+        columns[0] = 350;
+        columns[1] = 450;
+        columns[2] = 550;
+        columns[3] = 650;
+        columns[4] = 750;
+        columns[5] = 850;
+        columns[6] = 950;
+        columns[7] = 1050;
+        columns[8] = 1150;
     }
 
     // Ensures that the user can't randomly place plants in the world but only in the grid.
     public int returnGridRowPosition(int y) {
         int row;
-        int[] rowGrid = {240, 434, 626, 822, 1011, 1205};
+        int[] rowGrid = {30, 150, 270, 390, 510, 630};
 
         for (row = 0; row < 5; row++) {
             if (y > rowGrid[row] && y < rowGrid[row + 1]) {
@@ -242,7 +269,7 @@ public class Background extends JPanel implements ActionListener {
     // Ensures that the user can't randomly place plants in the world but only in the grid.
     public int returnGridColumnPosition(int x) {
         int column;
-        int[] columnGrid = {469, 628, 787, 945, 1110, 1269, 1429, 1589, 1749, 1913};
+        int[] columnGrid = {300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200};
 
         for (column = 0; column < 9; column++) {
             if(x > columnGrid[column] && x < columnGrid[column + 1]) {
@@ -253,21 +280,13 @@ public class Background extends JPanel implements ActionListener {
         return -1;
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        inGame();
-        // updateBullets();
-        updateZombies();
-        // checkCollisions();
-        repaint();
-    }
-
     private void inGame() {
         if (!ingame) {
-            timer.stop();
+        //    timer.stop();
         }
     }
 
+    /*
     private void updateBullets() {
         List<Bullet> bs = plant.getBullets();
 
@@ -281,6 +300,7 @@ public class Background extends JPanel implements ActionListener {
             }
         }
     }
+    */
 
     private void updateZombies() {
         if (zombies.isEmpty()) {
@@ -300,6 +320,7 @@ public class Background extends JPanel implements ActionListener {
     }
 
     public void checkCollisions() {
+        /*
         List<Bullet> bs = plant.getBullets();
         for (Bullet b : bs) {
             Rectangle r1 = b.getBounds();
@@ -329,6 +350,7 @@ public class Background extends JPanel implements ActionListener {
                 }
             }
         }
+        */
 
         for (int i = 0; i < 5; i++) {
             Rectangle r4 = lm.getBounds();
@@ -347,44 +369,41 @@ public class Background extends JPanel implements ActionListener {
         }
     }
 
-    private class Control implements MouseListener, MouseMotionListener {
-        @Override
-        public void mouseDragged(MouseEvent e) {
-            // TODO Auto-generated method stub
-        }
+    private class Control implements ActionListener {
+        int x;
+        int y;
 
-        @Override
-        public void mouseMoved(MouseEvent e) {
-            // TODO Auto-generated method stub
-            
+        public Control (int x, int y) {
+            this.x = x;
+            this.y = y;
         }
-
+        /*
         @Override
         public void mouseClicked(MouseEvent e) {
             xMouse = e.getX();
             yMouse = e.getY();
 
             // Card position
-            if (xMouse < 235 && xMouse >= 0) {
-                if (yMouse <= 250 && yMouse >= 100 && sunScore >= 50) {
+            if (xMouse < 155 && xMouse >= 0) {
+                if (yMouse <= 200 && yMouse >= 100 && sunScore >= 50) {
                     selectedButton = 0;
                 }
-                if (yMouse <= 400 && yMouse >= 250 && sunScore >= 100) {
+                if (yMouse <= 300 && yMouse >= 200 && sunScore >= 100) {
                     selectedButton = 1;
                 }
-                if (yMouse <= 550 && yMouse >= 400 && sunScore >= 200) {
+                if (yMouse <= 400 && yMouse >= 300 && sunScore >= 200) {
                     selectedButton = 2;
                 }
-                if (yMouse <= 700 && yMouse >= 550 && sunScore >= 175) {
+                if (yMouse <= 500 && yMouse >= 400 && sunScore >= 175) {
                     selectedButton = 3;
                 }
-                if (yMouse < 850 && yMouse >= 700 && sunScore >= 50) {
+                if (yMouse <= 600 && yMouse >= 500 && sunScore >= 50) {
                     selectedButton = 4;
                 }
             }
 
             // Plantable location
-            if (xMouse <= 1914 && xMouse >= 496 && yMouse <= 1205 && yMouse > 240 && selectedButton != -1) {
+            if (xMouse <= 1200 && xMouse >= 300 && yMouse <= 630 && yMouse > 30 && selectedButton != -1) {
                 planted = true;
             }
         }
@@ -412,5 +431,116 @@ public class Background extends JPanel implements ActionListener {
             // TODO Auto-generated method stub
             
         }
+        */
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (active == Play.PlantType.Sunflower) {
+                if (getSunScore() >= 50) {
+                    plants[y][x].setPlant(new SunFlower(x, y));
+                    setSunScore(getSunScore() - 50);
+                }
+            }
+
+            if (active == Play.PlantType.Peashooter) {
+                if (getSunScore() >= 100) {
+                    plants[y][x].setPlant(new PeaShooter(x, y));
+                    setSunScore(getSunScore() - 100);
+                }
+            }
+
+            if (active == Play.PlantType.Peashooter2) {
+                if (getSunScore() >= 100) {
+                    plants[y][x].setPlant(new PeaShooter(x, y));
+                    setSunScore(getSunScore() - 100);
+                }
+            }
+
+            if (active == Play.PlantType.Torchwood) {
+                if (getSunScore() >= 175) { 
+                    plants[y][x].setPlant(new Torchwood(x, y));
+                    setSunScore(getSunScore() - 175);
+               }
+            }
+
+            if (active == Play.PlantType.Wallnut) {
+                if (getSunScore() >= 50) { 
+                    plants[y][x].setPlant(new Wallnut(x, y));
+                    setSunScore(getSunScore() - 50);
+               }
+            }
+
+            active = Play.PlantType.None;
+        }
+    }
+
+    /*
+    public void initPlants() {
+        int plantRow = returnGridRowPosition(xMouse);
+        int plantCol = returnGridColumnPosition(yMouse);
+
+        int x = (plantRow - 90) / 120;
+        int y = (plantCol - 350) / 100;
+
+        if (planted && plantRow != 1 && plantCol != 1) {
+            if(getSunScore() >= 50) {
+                if (selectedButton == 0) {
+                    plants[y][x] = new SunFlower(xMouse, yMouse);
+                    setSunScore(getSunScore() - 50);
+                }
+            }
+
+            if(getSunScore() >= 100) {
+                if (selectedButton == 1) {
+                    plants[y][x] = new PeaShooter(xMouse, yMouse);
+                    setSunScore(getSunScore() - 100);
+                }
+            }
+
+            if(getSunScore() >= 200) { 
+                if (selectedButton == 2) {
+                    plants[y][x] = new PeaShooter(xMouse, yMouse);
+                    setSunScore(getSunScore() - 200);
+                }
+            } 
+            
+            if(getSunScore() >= 175) {
+                if (selectedButton == 3) {
+                    plants[y][x] = new Torchwood(xMouse, yMouse);
+                    setSunScore(getSunScore() - 175);
+                }
+            }
+
+            if(getSunScore() >= 50) { 
+                if (selectedButton == 4) {
+                    plants[y][x] = new Wallnut(xMouse, yMouse);
+                    setSunScore(getSunScore() - 50);
+                } 
+           }
+        }
+
+        selectedButton = -1;
+        planted = false;
+    }
+    */
+
+    public ArrayList<Sun> getActiveSuns() {
+        return activeSuns;
+    }
+
+    public void setActiveSuns(ArrayList<Sun> activeSuns) {
+        this.activeSuns = activeSuns;
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        xMouse = e.getX();
+        yMouse = e.getY();
     }
 }

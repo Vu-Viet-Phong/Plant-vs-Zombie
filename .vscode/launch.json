@@ -1,0 +1,63 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Launch Play",
+            "request": "launch",
+            "mainClass": "code.gui.Play",
+            "projectName": "Plant-vs-Zombie_57c66ce1"
+        },
+        {
+            "type": "java",
+            "name": "Launch GameWindow",
+            "request": "launch",
+            "mainClass": "GameWindow"
+        },
+        {
+            "type": "java",
+            "name": "Launch Main",
+            "request": "launch",
+            "mainClass": "Main"
+        },
+        {
+            "type": "java",
+            "name": "Launch Particle",
+            "request": "launch",
+            "mainClass": "Particle"
+        },
+        {
+            "type": "java",
+            "name": "Launch Play(1)",
+            "request": "launch",
+            "mainClass": "code.gui.Play"
+        },
+        {
+            "type": "java",
+            "name": "Launch PZGUI",
+            "request": "launch",
+            "mainClass": "gui.PZGUI"
+        },
+        {
+            "type": "java",
+            "name": "Launch MovingSpriteEx",
+            "request": "launch",
+            "mainClass": "java2d.movingsprites.MovingSpriteEx"
+        },
+        {
+            "type": "java",
+            "name": "Launch ShootingMissilesEx",
+            "request": "launch",
+            "mainClass": "java2d.movingsprites.ShootingMissilesEx"
+        }
+    ]
+}

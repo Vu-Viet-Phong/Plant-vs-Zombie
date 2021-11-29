@@ -4,7 +4,7 @@ package code.zombie;
  * @author Trương Đăng Khoa
  */
 public class ConeheadZombie extends Zombie {
-    private int speed = 6;
+    private int speed = 1;
 
     public ConeheadZombie(int y) {
         super(y);

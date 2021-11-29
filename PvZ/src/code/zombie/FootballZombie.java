@@ -4,7 +4,7 @@ package code.zombie;
  * @author Đinh Bình Thanh Thông
  */
 public class FootballZombie extends Zombie {
-    private int speed = 10;
+    private int speed = 2;
 
     public FootballZombie(int y) {
         super(y);

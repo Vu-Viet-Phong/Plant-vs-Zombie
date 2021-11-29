@@ -4,7 +4,7 @@ package code.zombie;
  * @author Trương Đăng Khoa
  */
 public class NormalZombie extends Zombie {
-    private int speed = 2;
+    private int speed = 1;
     public NormalZombie(int y) {
         super(y);
         setHealth(300);

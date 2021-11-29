@@ -15,16 +15,16 @@ public class Sun extends JPanel implements MouseListener {
     private int locX;
     private int locY;
     private int endY;
-    private int speed = 2;
     private Image image;
     private int destruct = 200;
-    private Background gp;
+    private Background bg;
 
-    public Sun(int locX, int locY, int endY, Background gp) {
+    public Sun(int locX, int locY, int endY, Background bg) {
         image = new ImageIcon(this.getClass().getResource("/images/sun.png")).getImage();
         this.locX = locX;
         this.locY = locY;
-        this.gp = gp;
+        this.endY = endY;
+        this.bg = bg;
         setSize(80, 80);
         setOpaque(false);
         setLocation(locX, locY);
@@ -35,6 +35,19 @@ public class Sun extends JPanel implements MouseListener {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         g.drawImage(image, 0, 0, null);
+    }
+
+    public void advance() {
+        if (locY < endY) {
+            locY += 4;
+        } else {
+            destruct--;
+            if (destruct < 0) {
+                bg.remove(this);
+                bg.getActiveSuns().remove(this);
+            }
+        }
+        setLocation(locX, locY);
     }
 
     @Override
@@ -51,8 +64,9 @@ public class Sun extends JPanel implements MouseListener {
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        // TODO Auto-generated method stub
-        
+        bg.setSunScore(bg.getSunScore() + 25);
+        bg.remove(this);
+        bg.getActiveSuns().remove(this);
     }
 
     @Override
