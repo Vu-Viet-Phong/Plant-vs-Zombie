@@ -1,4 +1,4 @@
-package code;
+package code.gui;
 
 import java.awt.Image;
 import java.awt.Graphics;
@@ -17,7 +17,7 @@ public class Cards extends JPanel implements MouseListener {
 
     public Cards(Image img) {
         this.img = img;
-        setSize(234, 150);
+        setSize(155, 97);
         addMouseListener(this);
     }
 

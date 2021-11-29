@@ -1,26 +1,44 @@
 package code.zombie;
 
-import code.Character;
+import java.awt.Image;
+import java.awt.Rectangle;
+import javax.swing.ImageIcon;
 
 /**
  * @author Vũ Viết Phong
  */
-public class Zombie extends Character {
-    protected static int speed = 1;
+public abstract class Zombie {
+    protected int locX = 1295;
+    protected int y;
+    protected int width;
+    protected int height;
+
     protected static int health;
     protected static int damage;
-    private static int locX = 1800;
+    
+    protected boolean visible;
+    protected Image image;
 
-    public Zombie(int x, int y) {
-        super(x, y);
+    protected Zombie(int y) {
+        this.y = y;
+        visible = true;
     }
 
-    public static int getSpeed() {
-        return speed;
+    protected void loadImage(String imageName) {
+        image = new ImageIcon(this.getClass().getResource(imageName)).getImage();
     }
 
-    public static void setSpeed(int speed) {
-        Zombie.speed = speed;
+    protected void getImageDimensions() {
+        width = image.getWidth(null);
+        height = image.getHeight(null);
+    }
+
+    public int getX() {
+        return locX;
+    }
+
+    public int getY() {
+        return y;
     }
 
     public int getHealth() {
@@ -39,25 +57,21 @@ public class Zombie extends Character {
         Zombie.damage = damage;
     }
 
-    public void move() {
-        x -= Zombie.getSpeed();
+    public boolean isVisible() {
+        return visible;
     }
 
-    public static Zombie getZombie(int type, int locY) {
-        Zombie z = new Zombie(locX, locY);
-        
-        switch (type) {
-            case 1:
-                z = new NormalZombie(locX, locY);
-                break;
-            case 2:
-                z = new ConeheadZombie(locX, locY);
-                break;
-            case 3:
-                z = new FootballZombie(locX, locY);
-                break;
-        }
-
-        return z;
+    public void setVisible(Boolean visible) {
+        this.visible = visible;
     }
+
+    public Image getImage() {
+        return image;
+    }
+
+    public Rectangle getBounds() {
+        return new Rectangle(locX, y, width, height);
+    }
+
+    public abstract void move();
 }

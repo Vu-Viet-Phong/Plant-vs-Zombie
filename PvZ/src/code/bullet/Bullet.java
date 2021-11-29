@@ -1,13 +1,45 @@
 package code.bullet;
 
-import code.Character;
+import java.awt.Image;
+import java.awt.Rectangle;
+import javax.swing.ImageIcon;
 
-public class Bullet extends Character {
+/**
+ * @author Vu Viet Phong
+ */
+public class Bullet {
+    protected int x;
+    protected int y;
+    protected int width;
+    protected int height;
+
     protected static int speed = 2;
     protected static int damage = 50;
 
+    protected boolean visible;
+    protected Image image;
+
     public Bullet(int x, int y) {
-        super(x, y);
+        this.x = x;
+        this.y = y;
+        visible = true;
+    }
+
+    protected void loadImage(String imageName) {
+        image = new ImageIcon(this.getClass().getResource(imageName)).getImage();
+    }
+
+    protected void getImageDimensions() {
+        width = image.getWidth(null);
+        height = image.getHeight(null);
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
     }
 
     public static double getSpeed() {
@@ -25,6 +57,22 @@ public class Bullet extends Character {
     public static void setDamage(int damage) {
         Bullet.damage = damage;
     }    
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(Boolean visible) {
+        this.visible = visible;
+    }
+
+    public Image getImage() {
+        return image;
+    }
+
+    public Rectangle getBounds() {
+        return new Rectangle(x, y, width, height);
+    }
 
     public void move() {
         x += Bullet.getSpeed();
