@@ -3,7 +3,7 @@ package code.bullet;
 import code.Character;
 
 public class Bullet extends Character {
-    protected static double speed = 1.25;
+    protected static int speed = 2;
     protected static int damage = 50;
 
     public Bullet(int x, int y) {
@@ -14,7 +14,7 @@ public class Bullet extends Character {
         return speed;
     }
 
-    public static void setSpeed(double speed) {
+    public static void setSpeed(int speed) {
         Bullet.speed = speed;
     }
 
@@ -25,4 +25,8 @@ public class Bullet extends Character {
     public static void setDamage(int damage) {
         Bullet.damage = damage;
     }    
+
+    public void move() {
+        x += Bullet.getSpeed();
+    }
 }

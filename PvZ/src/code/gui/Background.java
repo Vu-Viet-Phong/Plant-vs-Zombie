@@ -3,6 +3,7 @@ package code.gui;
 import java.awt.Image;
 import java.awt.Graphics;
 import java.awt.Toolkit;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -13,8 +14,14 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
+import code.Lawnmower;
+import code.bullet.Bullet;
+import code.plant.Plant;
 import code.zombie.Zombie;
 
+/**
+ * @author Vu Viet Phong
+ */
 public class Background extends JPanel implements ActionListener {
     private final int BG_WIDTH = 1801;
     private final int BG_HEIGHT = 1000;
@@ -29,7 +36,11 @@ public class Background extends JPanel implements ActionListener {
 
     private final int DELAY = 10;
     private boolean ingame;
+
+    private Plant plant;
     private List<Zombie> zombies;
+    private Lawnmower lm;
+    private int[] rowlm = {210, 366, 522, 678, 834}; 
     private Play.PlantType active = Play.PlantType.None;
 
     public Background(JLabel sunScoreboard) {
@@ -83,9 +94,8 @@ public class Background extends JPanel implements ActionListener {
     private void doDrawing(Graphics g) {
         g.drawImage(bgImg, 0, 0, this.getWidth(), this.getHeight(), this);
 
-        int[] row = {210, 366, 522, 678, 834}; 
         for (int i = 0; i < 5; i++) {
-            g.drawImage(lmImg, 330, row[i], 100, 80, this);
+            g.drawImage(lmImg, 330, rowlm[i], 100, 80, this);
         }
         
         for (Zombie zombie : zombies) {
@@ -170,13 +180,34 @@ public class Background extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         inGame();
+        updatePlants();
+        updateBullets();
         updateZombies();
+        checkCollisions();
         repaint();
     }
 
     private void inGame() {
         if (!ingame) {
             timer.stop();
+        }
+    }
+
+    private void updatePlants() {
+
+    }
+
+    private void updateBullets() {
+        List<Bullet> bs = plant.getBullets();
+
+        for (int i = 0; i < bs.size(); i++) {
+            Bullet b = bs.get(i);
+
+            if (b.isVisible()) {
+                b.move();
+            } else {
+                bs.remove(i);
+            }
         }
     }
 
@@ -191,6 +222,56 @@ public class Background extends JPanel implements ActionListener {
 
             if (z.isVisible()) {
                 z.move();
+            } else {
+                zombies.remove(i);
+            }
+        }
+    }
+
+    public void checkCollisions() {
+        List<Bullet> bs = plant.getBullets();
+        for (Bullet b : bs) {
+            Rectangle r1 = b.getBounds();
+            for (Zombie zombie : zombies) {
+                Rectangle r2 = zombie.getBounds();
+                if (r1.intersects(r2)) {
+                    b.setVisible(false);
+                    if (zombie.getHealth() == 0) {
+                        zombie.setVisible(false);
+                    } else {
+                        int hp = zombie.getHealth() - b.getDamage();
+                        Zombie.setHealth(hp);
+                    }
+                }
+            }
+        }
+
+        Rectangle r3 = plant.getBounds();
+        for (Zombie zombie : zombies) {
+            Rectangle r2 = zombie.getBounds();
+            if (r3.intersects(r2)) {
+                if (plant.getHealth() == 0) {
+                    plant.setVisible(false);
+                } else {
+                    int hp = plant.getHealth() - zombie.getDamage();
+                    plant.setHealth(hp);
+                }
+            }
+        }
+
+        for (int i = 0; i < 5; i++) {
+            Rectangle r4 = lm.getBounds();
+            for (Zombie zombie : zombies) {
+                Rectangle r2 = zombie.getBounds();
+                if (r4.intersects(r2)) {
+                    Lawnmower lms = new Lawnmower(330, rowlm[i]);
+
+                    lm.move();
+                    if (lm.getX() == (BG_WIDTH - 1)) {
+                        lm.setVisible(false);
+                    }
+                    zombie.setVisible(false);
+                }
             }
         }
     }

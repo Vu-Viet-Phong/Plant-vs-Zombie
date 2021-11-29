@@ -1,14 +1,12 @@
 package code.zombie;
 
-import java.util.Random;
-
 import code.Character;
 
 /**
  * @author Vũ Viết Phong
  */
 public class Zombie extends Character {
-    protected static double speed = 1;
+    protected static int speed = 1;
     protected static int health;
     protected static int damage;
     private static int locX = 1800;
@@ -17,15 +15,15 @@ public class Zombie extends Character {
         super(x, y);
     }
 
-    public static double getSpeed() {
+    public static int getSpeed() {
         return speed;
     }
 
-    public static void setSpeed(double speed) {
+    public static void setSpeed(int speed) {
         Zombie.speed = speed;
     }
 
-    public static int getHealth() {
+    public int getHealth() {
         return health;
     }
 
