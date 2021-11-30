@@ -1,6 +1,6 @@
 # Plant-vs-Zombies
 
-<img hight="250" width="400" alt="GIF" align="right" src="https://github.com/vtenpo/Plant-vs-Zombie/blob/main/PvZ/src/images/wallpaper.jpg">
+<img hight="250" width="400" align="right" src="https://github.com/vtenpo/Plant-vs-Zombie/blob/main/PvZ/src/images/wallpaper.jpg">
 
 Plants vs Zombies is a tower defense video game where the player's goal is to prevent zombies from reaching the house. The lawn is divided into a grid of squares, with the player's house on the left. Players plant different types of plants on each individual square of the grid. Each plant has a different defense style, such as shooting, exploding, or blocking. Each type of zombie has its own special behaviors and weaknesses when encountering certain plants.
 
