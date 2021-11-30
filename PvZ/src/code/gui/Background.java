@@ -10,13 +10,11 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
-import javax.swing.JPanel;
 import java.awt.Font;
 import javax.swing.Timer;
 import javax.swing.SwingConstants;
@@ -24,7 +22,6 @@ import javax.swing.SwingConstants;
 import code.Collider;
 import code.Lawnmower;
 import code.Sun;
-import code.bullet.Bullet;
 import code.plant.*;
 import code.zombie.*;
 
@@ -47,7 +44,6 @@ public class Background extends JLayeredPane implements MouseMotionListener {
     private Timer advancerTimer;
     private Timer zombieProducer;
 
-    private final int DELAY = 100;
     private boolean ingame;
     
     private int[] rows;
@@ -55,8 +51,6 @@ public class Background extends JLayeredPane implements MouseMotionListener {
 
     private int xMouse;
     private int yMouse;
-    private int selectedButton = -1;
-    private Boolean planted = false;
 
     private Collider[][] plants;
     private ArrayList<Zombie> zombies;
