@@ -1,64 +1,61 @@
 package code.gui;
 
-import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Graphics;
+import java.awt.Toolkit;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
-import javax.swing.SwingConstants;
+import java.awt.Font;
 import javax.swing.Timer;
+import javax.swing.SwingConstants;
 
-import code.Collider;
-import code.Sun;
-import code.bullet.Bullet;
-import code.plant.PeaShooter;
-import code.plant.Plant;
-import code.plant.SunFlower;
-import code.plant.Torchwood;
-import code.plant.Wallnut;
-import code.zombie.ConeheadZombie;
-import code.zombie.FootballZombie;
-import code.zombie.NormalZombie;
-import code.zombie.Zombie;
+import code.plant.*;
+import code.zombie.*;
 
 /**
  * @author Vu Viet Phong
  */
 public class Background extends JLayeredPane implements MouseMotionListener {
-    private Image bgImg;
     private final int BG_WIDTH = 1300;
     private final int BG_HEIGHT = 769;
-    private final int DELAY = 10;
-    
+
+    private Image bgImg;
     private Image lmImg;
-    private int[] rowlm = {150, 270, 390, 510, 630}; 
 
-    private int xMouse;
-    private int yMouse;
+    private int sunScore;
+    private JLabel sunScoreboard;
 
-    private boolean ingame;
-    private Collider[] colliders;
-    private ArrayList<ArrayList<Zombie>> laneZombies;
-    private ArrayList<ArrayList<Bullet>> lanePeas;
-
+    // private Timer timer;
     private Timer sunProducer;
     private Timer redrawTimer;
     private Timer advancerTimer;
     private Timer zombieProducer;
 
-    /**SUN */
-    private int sunScore;
-    private JLabel sunScoreboard;
+    private boolean ingame;
+    
+    private int[] rows;
+    private int[] columns;
+
+    private int xMouse;
+    private int yMouse;
+
+    private Collider[][] plants;
+    private ArrayList<Zombie> zombies;
+    private ArrayList<Sun> activeSuns;
+    private Lawnmower lm;
+    private int[] rowlm = {150, 270, 390, 510, 630}; 
+    private Play.PlantType active = Play.PlantType.None;
+    private Control control;
 
     public int getSunScore() {
         return sunScore;
@@ -71,57 +68,40 @@ public class Background extends JLayeredPane implements MouseMotionListener {
         sunScoreboard.setHorizontalTextPosition(SwingConstants.CENTER);
     }
 
-    private ArrayList<Sun> activeSuns;
-
-    public ArrayList<Sun> getActiveSuns() {
-        return activeSuns;
-    }
-
-    public void setActiveSuns(ArrayList<Sun> activeSuns) {
-        this.activeSuns = activeSuns;
-    }
-
     public Background(JLabel sunScoreboard) {
+        setSize(BG_WIDTH, BG_HEIGHT);
+        setLayout(null);
+        setFocusable(true);
+
+        ingame = true;
         this.sunScoreboard = sunScoreboard;
         setSunScore(150);
-        setLayout(null);
-        setSize(BG_WIDTH, BG_HEIGHT);
-        addMouseMotionListener(this);
-        
-        ingame = true;
+
         bgImg = new ImageIcon(this.getClass().getResource("/images/background.jpg")).getImage();
         lmImg = new ImageIcon(this.getClass().getResource("/images/items/Lawn_Mower.png")).getImage();
+        
+        setRowsCoordinates();
+        setColumnsCoordinates();
 
-        laneZombies = new ArrayList<>();
-        laneZombies.add(new ArrayList<>()); //line 1
-        laneZombies.add(new ArrayList<>()); //line 2
-        laneZombies.add(new ArrayList<>()); //line 3
-        laneZombies.add(new ArrayList<>()); //line 4
-        laneZombies.add(new ArrayList<>()); //line 5
+        int plantRow = returnGridRowPosition(xMouse);
+        int plantCol = returnGridColumnPosition(yMouse);
 
-        lanePeas = new ArrayList<>();
-        lanePeas.add(new ArrayList<>()); //line 1
-        lanePeas.add(new ArrayList<>()); //line 2
-        lanePeas.add(new ArrayList<>()); //line 3
-        lanePeas.add(new ArrayList<>()); //line 4
-        lanePeas.add(new ArrayList<>()); //line 5
+        int x = (plantRow - 90) / 120;
+        int y = (plantCol - 350) / 100;
 
-        colliders = new Collider[45];
-        for (int i = 0; i < 45; i++) {
-            Collider a = new Collider();
-            a.setLocation(44 + (i % 9) * 100, 109 + (i / 9) * 120);
-            a.setAction(new Control((i % 9), (i / 9)));
-            colliders[i] = a;
-            add(a, new Integer(0));
+        plants = new Collider[5][9];
+        for (int i = 0; i < 5; i++) {  
+            for (int j = 0; j < 9; j++) {
+                Collider a = new Collider();
+                a.setLocation(rows[i], columns[j]);
+                a.setAction(new Control(x, y));
+                plants[i][j] = a;
+                add(a, new Integer(0));
+            }
         }
 
-        //colliders[0].setPlant(new FreezePeashooter(this,0,0));
-/*
-        colliders[9].setPlant(new Peashooter(this,0,1));
-        laneZombies.get(1).add(new NormalZombie(this,1));*/
 
         activeSuns = new ArrayList<>();
-
         redrawTimer = new Timer(25, (ActionEvent e) -> {
             repaint();
         });
@@ -138,98 +118,22 @@ public class Background extends JLayeredPane implements MouseMotionListener {
         });
         sunProducer.start();
 
-        
+        zombieProducer = new Timer(7000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                updateZombies();
+            }
+        });
+        zombieProducer.start();
+
+        initZombies(5);
     }
 
     private void advance() {
-        inGame();
-        updateSun();
         updateZombies();
-        updateBullets();
-        checkCollision();
-        repaint();
-    }
 
-    private void inGame() {
-        if (!ingame) {
-            advancerTimer.stop();
-        }
-    }
-
-    private void updateSun() {
         for (int i = 0; i < activeSuns.size(); i++) {
             activeSuns.get(i).advance();
-        }
-    }
-
-    private void updatePlants() {
-        
-    }
-
-    private void updateBullets() {
-        List<Bullet> bs = plant.getBullets();
-
-        for (int i = 0; i < bs.size(); i++) {
-            Bullet b = bs.get(i);
-
-            if (b.isVisible()) {
-                b.move();
-            } else {
-                bs.remove(i);
-            }
-        }
-    }
-
-    private void updateZombies() {
-        if (zombies.isEmpty()) {
-            ingame = false;
-
-            return;
-        }
-        
-        for (int i = 0; i < zombies.size(); i++) {
-            Zombie z = zombies.get(i);
-
-            if (z.isVisible()) {
-                z.move();
-            } else {
-                zombies.remove(i);
-            }
-        }
-    }
-
-    public void checkCollision() {
-        List<Bullet> bs = plant.getBullets();
-
-        for (Bullet b : bs) {
-            Rectangle r1 = b.getBounds();
-
-            for (Zombie zombie : zombies) {
-                Rectangle r2 = zombie.getBounds();
-
-                if (r1.intersects(r2)) {
-                    zombie.setHealth(zombie.getHealth() - b.getDamage());
-                    b.setVisible(false);
-                    
-                    if (zombie.getHealth() == 0) {
-                        zombie.setVisible(false);
-                    }
-                }
-            }
-        }
-
-        Rectangle r3 = plant.getBounds();
-
-        for (Zombie zombie : zombies) {
-            Rectangle r2 = zombie.getBounds();
-            
-            if (r2.intersects(r3)) {
-                plant.setHealth(plant.getHealth() - zombie.getDamage());
-
-                if (plant.getHealth() == 0) {
-                    plant.setVisible(false);
-                }
-            }
         }
     }
 
@@ -266,12 +170,13 @@ public class Background extends JLayeredPane implements MouseMotionListener {
         super.paintComponent(g);
 
         if (ingame) {
-            drawObjects(g);
+            doDrawing(g);
         }
+
+        Toolkit.getDefaultToolkit().sync();
     }
 
-    private void drawObjects(Graphics g) {
-        // Draw background
+    private void doDrawing(Graphics g) {
         g.drawImage(bgImg, 0, 0, this.getWidth(), this.getHeight(), this);
 
         // Draw lawnmover
@@ -279,27 +184,41 @@ public class Background extends JLayeredPane implements MouseMotionListener {
             g.drawImage(lmImg, 240, rowlm[i], 100, 80, this);
         }
         
-        // Draw plants
-        for (int i = 0; i < 45; i++) {
-            Collider c = colliders[i];
-            if (c.assignedPlant != null) {
-                Plant plant = c.assignedPlant;
-                if (plant instanceof SunFlower) {
-                    g.drawImage(plant.getImage(), plant.getX(), plant.getY(), 75, 75, this);
-                } else if (plant instanceof PeaShooter) {
-                    g.drawImage(plant.getImage(), plant.getX(), plant.getY(), 75, 75, this);
-                } else if (plant instanceof Torchwood) {
-                    g.drawImage(plant.getImage(), plant.getX(), plant.getY(), 100, 100, this);
-                } else {
-                    g.drawImage(plant.getImage(), plant.getX(), plant.getY(), 75, 75, this);
+        //Draw plants
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 9; j++) {
+                Collider c = plants[i][j];
+                if (c.assignedPlant != null) {
+                    Plant plant = c.assignedPlant;
+                    if (plant instanceof SunFlower) {
+                        g.drawImage(plant.getImage(), plant.getX(), plant.getY(), 75, 75, this);
+                    } else if (plant instanceof PeaShooter) {
+                        g.drawImage(plant.getImage(), plant.getX(), plant.getY(), 75, 75, this);
+                    } else if (plant instanceof Torchwood) {
+                        g.drawImage(plant.getImage(), plant.getX(), plant.getY(), 100, 100, this);
+                    } else {
+                        g.drawImage(plant.getImage(), plant.getX(), plant.getY(), 75, 75, this);
+                    }
                 }
             }
         }
+
+        //Draw zombies
+        for (Zombie zombie : zombies) {
+            if (zombie.isVisible()) {
+                g.drawImage(zombie.getImage(), zombie.getX(), zombie.getY(), null);
+            }
+        }
+    }
+    
+    public Play.PlantType getActivePlantingBrush() {
+        return active;
     }
 
-    private int[] rows;
-    private int[] columns;
-    
+    public void setActivePlantingBrush(Play.PlantType active) {
+        this.active = active;
+    }
+
     // Possible Row Cordinates
     private void setRowsCoordinates() {
         rows = new int[5];
@@ -352,55 +271,241 @@ public class Background extends JLayeredPane implements MouseMotionListener {
         return -1;
     }
 
-    /** Control Mouse */
-    private Play.PlantType active = Play.PlantType.None;
-
-    public Play.PlantType getActivePlantingBrush() {
-        return active;
+    private void inGame() {
+        if (!ingame) {
+        //    timer.stop();
+        }
     }
 
-    public void setActivePlantingBrush(Play.PlantType active) {
-        this.active = active;
+    /*
+    private void updateBullets() {
+        List<Bullet> bs = plant.getBullets();
+        for (int i = 0; i < bs.size(); i++) {
+            Bullet b = bs.get(i);
+            if (b.isVisible()) {
+                b.move();
+            } else {
+                bs.remove(i);
+            }
+        }
+    }
+    */
+
+    private void updateZombies() {
+        if (zombies.isEmpty()) {
+            ingame = false;
+            return;
+        }
+        
+        for (int i = 0; i < zombies.size(); i++) {
+            Zombie z = zombies.get(i);
+
+            if (z.isVisible()) {
+                z.move();
+            } // else {
+              //  zombies.remove(i);
+            // }
+        }
+    }
+
+    public void checkCollisions() {
+        /*
+        List<Bullet> bs = plant.getBullets();
+        for (Bullet b : bs) {
+            Rectangle r1 = b.getBounds();
+            for (Zombie zombie : zombies) {
+                Rectangle r2 = zombie.getBounds();
+                if (r1.intersects(r2)) {
+                    b.setVisible(false);
+                    if (zombie.getHealth() == 0) {
+                        zombie.setVisible(false);
+                    } else {
+                        int hp = zombie.getHealth() - b.getDamage();
+                        Zombie.setHealth(hp);
+                    }
+                }
+            }
+        }
+        Rectangle r3 = plant.getBounds();
+        for (Zombie zombie : zombies) {
+            Rectangle r2 = zombie.getBounds();
+            if (r3.intersects(r2)) {
+                if (plant.getHealth() == 0) {
+                    plant.setVisible(false);
+                } else {
+                    int hp = plant.getHealth() - zombie.getDamage();
+                    plant.setHealth(hp);
+                }
+            }
+        }
+        */
+
+        for (int i = 0; i < 5; i++) {
+            Rectangle r4 = lm.getBounds();
+            for (Zombie zombie : zombies) {
+                Rectangle r2 = zombie.getBounds();
+                if (r4.intersects(r2)) {
+                    Lawnmower lms = new Lawnmower(330, rowlm[i]);
+
+                    lm.move();
+                    if (lm.getX() == (BG_WIDTH - 1)) {
+                        lm.setVisible(false);
+                    }
+                    zombie.setVisible(false);
+                }
+            }
+        }
     }
 
     private class Control implements ActionListener {
         int x;
         int y;
 
-        public Control(int x, int y) {
+        public Control (int x, int y) {
             this.x = x;
             this.y = y;
         }
+        /*
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            xMouse = e.getX();
+            yMouse = e.getY();
+            // Card position
+            if (xMouse < 155 && xMouse >= 0) {
+                if (yMouse <= 200 && yMouse >= 100 && sunScore >= 50) {
+                    selectedButton = 0;
+                }
+                if (yMouse <= 300 && yMouse >= 200 && sunScore >= 100) {
+                    selectedButton = 1;
+                }
+                if (yMouse <= 400 && yMouse >= 300 && sunScore >= 200) {
+                    selectedButton = 2;
+                }
+                if (yMouse <= 500 && yMouse >= 400 && sunScore >= 175) {
+                    selectedButton = 3;
+                }
+                if (yMouse <= 600 && yMouse >= 500 && sunScore >= 50) {
+                    selectedButton = 4;
+                }
+            }
+            // Plantable location
+            if (xMouse <= 1200 && xMouse >= 300 && yMouse <= 630 && yMouse > 30 && selectedButton != -1) {
+                planted = true;
+            }
+        }
+        @Override
+        public void mousePressed(MouseEvent e) {
+            // TODO Auto-generated method stub
+            
+        }
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            // TODO Auto-generated method stub
+            
+        }
+        @Override
+        public void mouseEntered(MouseEvent e) {
+            // TODO Auto-generated method stub
+            
+        }
+        @Override
+        public void mouseExited(MouseEvent e) {
+            // TODO Auto-generated method stub
+            
+        }
+        */
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (active == Play.PlantType.Sunflower && getSunScore() >= 50) {
-                colliders[x + y * 9].setPlant(new SunFlower(x, y));
-                setSunScore(getSunScore() - 50);
+            if (active == Play.PlantType.Sunflower) {
+                if (getSunScore() >= 50) {
+                    plants[y][x].setPlant(new SunFlower(x, y));
+                    setSunScore(getSunScore() - 50);
+                }
             }
 
-            if (active == Play.PlantType.Peashooter && getSunScore() >= 100) {
-                colliders[x + y * 9].setPlant(new PeaShooter(x, y));
-                setSunScore(getSunScore() - 100);
+            if (active == Play.PlantType.Peashooter) {
+                if (getSunScore() >= 100) {
+                    plants[y][x].setPlant(new PeaShooter(x, y));
+                    setSunScore(getSunScore() - 100);
+                }
             }
 
-            if (active == Play.PlantType.Peashooter2 && getSunScore() >= 100) {
-                colliders[x + y * 9].setPlant(new PeaShooter(x, y));
-                setSunScore(getSunScore() - 100);
+            if (active == Play.PlantType.Peashooter2) {
+                if (getSunScore() >= 100) {
+                    plants[y][x].setPlant(new PeaShooter(x, y));
+                    setSunScore(getSunScore() - 100);
+                }
             }
 
-            if (active == Play.PlantType.Torchwood && getSunScore() >= 175) {
-                colliders[x + y * 9].setPlant(new Torchwood(x, y));
-                setSunScore(getSunScore() - 175);
+            if (active == Play.PlantType.Torchwood) {
+                if (getSunScore() >= 175) { 
+                    plants[y][x].setPlant(new Torchwood(x, y));
+                    setSunScore(getSunScore() - 175);
+               }
             }
 
-            if (active == Play.PlantType.Wallnut && getSunScore() >= 50) {
-                colliders[x + y * 9].setPlant(new Wallnut(x, y));
-                setSunScore(getSunScore() - 50);
+            if (active == Play.PlantType.Wallnut) {
+                if (getSunScore() >= 50) { 
+                    plants[y][x].setPlant(new Wallnut(x, y));
+                    setSunScore(getSunScore() - 50);
+               }
             }
 
             active = Play.PlantType.None;
         }
+    }
+
+    /*
+    public void initPlants() {
+        int plantRow = returnGridRowPosition(xMouse);
+        int plantCol = returnGridColumnPosition(yMouse);
+        int x = (plantRow - 90) / 120;
+        int y = (plantCol - 350) / 100;
+        if (planted && plantRow != 1 && plantCol != 1) {
+            if(getSunScore() >= 50) {
+                if (selectedButton == 0) {
+                    plants[y][x] = new SunFlower(xMouse, yMouse);
+                    setSunScore(getSunScore() - 50);
+                }
+            }
+            if(getSunScore() >= 100) {
+                if (selectedButton == 1) {
+                    plants[y][x] = new PeaShooter(xMouse, yMouse);
+                    setSunScore(getSunScore() - 100);
+                }
+            }
+            if(getSunScore() >= 200) { 
+                if (selectedButton == 2) {
+                    plants[y][x] = new PeaShooter(xMouse, yMouse);
+                    setSunScore(getSunScore() - 200);
+                }
+            } 
+            
+            if(getSunScore() >= 175) {
+                if (selectedButton == 3) {
+                    plants[y][x] = new Torchwood(xMouse, yMouse);
+                    setSunScore(getSunScore() - 175);
+                }
+            }
+            if(getSunScore() >= 50) { 
+                if (selectedButton == 4) {
+                    plants[y][x] = new Wallnut(xMouse, yMouse);
+                    setSunScore(getSunScore() - 50);
+                } 
+           }
+        }
+        selectedButton = -1;
+        planted = false;
+    }
+    */
+
+    public ArrayList<Sun> getActiveSuns() {
+        return activeSuns;
+    }
+
+    public void setActiveSuns(ArrayList<Sun> activeSuns) {
+        this.activeSuns = activeSuns;
     }
 
     @Override

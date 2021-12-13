@@ -1,4 +1,4 @@
-package code;
+package code.gui;
 
 import java.awt.Image;
 import java.awt.Graphics;
@@ -7,8 +7,6 @@ import java.awt.event.MouseListener;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
-
-import code.gui.Background;
 
 
 public class Sun extends JPanel implements MouseListener {
