@@ -15,9 +15,9 @@ public class Sun extends JPanel implements MouseListener {
     private int endY;
     private Image image;
     private int destruct = 200;
-    private Background bg;
+    private GamePanel bg;
 
-    public Sun(int locX, int locY, int endY, Background bg) {
+    public Sun(int locX, int locY, int endY, GamePanel bg) {
         image = new ImageIcon(this.getClass().getResource("/images/sun.png")).getImage();
         this.locX = locX;
         this.locY = locY;

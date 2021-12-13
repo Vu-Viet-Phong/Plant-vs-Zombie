@@ -7,6 +7,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 import java.util.ArrayList;
@@ -25,15 +26,15 @@ import code.zombie.*;
 /**
  * @author Vu Viet Phong
  */
-public class Background extends JLayeredPane implements MouseMotionListener {
+public class Background extends JLayeredPane implements MouseListener, MouseMotionListener {
     private final int BG_WIDTH = 1300;
     private final int BG_HEIGHT = 769;
 
     private Image bgImg;
-    private Image lmImg;
 
-    private int sunScore;
-    private JLabel sunScoreboard;
+    private Image lmImg;
+    private Lawnmower lm;
+    private int[] rowlm = {150, 270, 390, 510, 630}; 
 
     // private Timer timer;
     private Timer sunProducer;
@@ -46,16 +47,12 @@ public class Background extends JLayeredPane implements MouseMotionListener {
     private int[] rows;
     private int[] columns;
 
-    private int xMouse;
-    private int yMouse;
-
     private Collider[][] plants;
     private ArrayList<Zombie> zombies;
-    private ArrayList<Sun> activeSuns;
-    private Lawnmower lm;
-    private int[] rowlm = {150, 270, 390, 510, 630}; 
-    private Play.PlantType active = Play.PlantType.None;
-    private Control control;
+    
+    /* Sun */
+    private int sunScore;
+    private JLabel sunScoreboard;
 
     public int getSunScore() {
         return sunScore;
@@ -68,20 +65,29 @@ public class Background extends JLayeredPane implements MouseMotionListener {
         sunScoreboard.setHorizontalTextPosition(SwingConstants.CENTER);
     }
 
-    public Background(JLabel sunScoreboard) {
-        setSize(BG_WIDTH, BG_HEIGHT);
-        setLayout(null);
-        setFocusable(true);
+    private ArrayList<Sun> activeSuns;
 
-        ingame = true;
+    public ArrayList<Sun> getActiveSuns() {
+        return activeSuns;
+    }
+
+    public void setActiveSuns(ArrayList<Sun> activeSuns) {
+        this.activeSuns = activeSuns;
+    }
+
+    public Background(JLabel sunScoreboard) {
         this.sunScoreboard = sunScoreboard;
         setSunScore(150);
-
-        bgImg = new ImageIcon(this.getClass().getResource("/images/background.jpg")).getImage();
-        lmImg = new ImageIcon(this.getClass().getResource("/images/items/Lawn_Mower.png")).getImage();
-        
+        setSize(BG_WIDTH, BG_HEIGHT);
+        setLayout(null);
         setRowsCoordinates();
         setColumnsCoordinates();
+
+        ingame = true;        
+        bgImg = new ImageIcon(this.getClass().getResource("/images/background.jpg")).getImage();
+        lmImg = new ImageIcon(this.getClass().getResource("/images/items/Lawn_Mower.png")).getImage();
+
+        addMouseListener(this);
 
         int plantRow = returnGridRowPosition(xMouse);
         int plantCol = returnGridColumnPosition(yMouse);
@@ -92,14 +98,9 @@ public class Background extends JLayeredPane implements MouseMotionListener {
         plants = new Collider[5][9];
         for (int i = 0; i < 5; i++) {  
             for (int j = 0; j < 9; j++) {
-                Collider a = new Collider();
-                a.setLocation(rows[i], columns[j]);
-                a.setAction(new Control(x, y));
-                plants[i][j] = a;
-                add(a, new Integer(0));
+                
             }
         }
-
 
         activeSuns = new ArrayList<>();
         redrawTimer = new Timer(25, (ActionEvent e) -> {
@@ -109,14 +110,6 @@ public class Background extends JLayeredPane implements MouseMotionListener {
 
         advancerTimer = new Timer(60, (ActionEvent e) -> advance());
         advancerTimer.start();
-
-        sunProducer = new Timer(5000, (ActionEvent e) -> {
-            Random rnd = new Random();
-            Sun sta = new Sun(rnd.nextInt(800) + 100, 0, rnd.nextInt(300) + 200, this);
-            activeSuns.add(sta);
-            add(sta, new Integer(1));
-        });
-        sunProducer.start();
 
         zombieProducer = new Timer(7000, new ActionListener() {
             @Override
@@ -209,14 +202,6 @@ public class Background extends JLayeredPane implements MouseMotionListener {
                 g.drawImage(zombie.getImage(), zombie.getX(), zombie.getY(), null);
             }
         }
-    }
-    
-    public Play.PlantType getActivePlantingBrush() {
-        return active;
-    }
-
-    public void setActivePlantingBrush(Play.PlantType active) {
-        this.active = active;
     }
 
     // Possible Row Cordinates
@@ -357,166 +342,67 @@ public class Background extends JLayeredPane implements MouseMotionListener {
         }
     }
 
-    private class Control implements ActionListener {
-        int x;
-        int y;
-
-        public Control (int x, int y) {
-            this.x = x;
-            this.y = y;
-        }
-        /*
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            xMouse = e.getX();
-            yMouse = e.getY();
-            // Card position
-            if (xMouse < 155 && xMouse >= 0) {
-                if (yMouse <= 200 && yMouse >= 100 && sunScore >= 50) {
-                    selectedButton = 0;
-                }
-                if (yMouse <= 300 && yMouse >= 200 && sunScore >= 100) {
-                    selectedButton = 1;
-                }
-                if (yMouse <= 400 && yMouse >= 300 && sunScore >= 200) {
-                    selectedButton = 2;
-                }
-                if (yMouse <= 500 && yMouse >= 400 && sunScore >= 175) {
-                    selectedButton = 3;
-                }
-                if (yMouse <= 600 && yMouse >= 500 && sunScore >= 50) {
-                    selectedButton = 4;
-                }
-            }
-            // Plantable location
-            if (xMouse <= 1200 && xMouse >= 300 && yMouse <= 630 && yMouse > 30 && selectedButton != -1) {
-                planted = true;
-            }
-        }
-        @Override
-        public void mousePressed(MouseEvent e) {
-            // TODO Auto-generated method stub
-            
-        }
-        @Override
-        public void mouseReleased(MouseEvent e) {
-            // TODO Auto-generated method stub
-            
-        }
-        @Override
-        public void mouseEntered(MouseEvent e) {
-            // TODO Auto-generated method stub
-            
-        }
-        @Override
-        public void mouseExited(MouseEvent e) {
-            // TODO Auto-generated method stub
-            
-        }
-        */
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (active == Play.PlantType.Sunflower) {
-                if (getSunScore() >= 50) {
-                    plants[y][x].setPlant(new SunFlower(x, y));
-                    setSunScore(getSunScore() - 50);
-                }
-            }
-
-            if (active == Play.PlantType.Peashooter) {
-                if (getSunScore() >= 100) {
-                    plants[y][x].setPlant(new PeaShooter(x, y));
-                    setSunScore(getSunScore() - 100);
-                }
-            }
-
-            if (active == Play.PlantType.Peashooter2) {
-                if (getSunScore() >= 100) {
-                    plants[y][x].setPlant(new PeaShooter(x, y));
-                    setSunScore(getSunScore() - 100);
-                }
-            }
-
-            if (active == Play.PlantType.Torchwood) {
-                if (getSunScore() >= 175) { 
-                    plants[y][x].setPlant(new Torchwood(x, y));
-                    setSunScore(getSunScore() - 175);
-               }
-            }
-
-            if (active == Play.PlantType.Wallnut) {
-                if (getSunScore() >= 50) { 
-                    plants[y][x].setPlant(new Wallnut(x, y));
-                    setSunScore(getSunScore() - 50);
-               }
-            }
-
-            active = Play.PlantType.None;
-        }
-    }
-
-    /*
-    public void initPlants() {
-        int plantRow = returnGridRowPosition(xMouse);
-        int plantCol = returnGridColumnPosition(yMouse);
-        int x = (plantRow - 90) / 120;
-        int y = (plantCol - 350) / 100;
-        if (planted && plantRow != 1 && plantCol != 1) {
-            if(getSunScore() >= 50) {
-                if (selectedButton == 0) {
-                    plants[y][x] = new SunFlower(xMouse, yMouse);
-                    setSunScore(getSunScore() - 50);
-                }
-            }
-            if(getSunScore() >= 100) {
-                if (selectedButton == 1) {
-                    plants[y][x] = new PeaShooter(xMouse, yMouse);
-                    setSunScore(getSunScore() - 100);
-                }
-            }
-            if(getSunScore() >= 200) { 
-                if (selectedButton == 2) {
-                    plants[y][x] = new PeaShooter(xMouse, yMouse);
-                    setSunScore(getSunScore() - 200);
-                }
-            } 
-            
-            if(getSunScore() >= 175) {
-                if (selectedButton == 3) {
-                    plants[y][x] = new Torchwood(xMouse, yMouse);
-                    setSunScore(getSunScore() - 175);
-                }
-            }
-            if(getSunScore() >= 50) { 
-                if (selectedButton == 4) {
-                    plants[y][x] = new Wallnut(xMouse, yMouse);
-                    setSunScore(getSunScore() - 50);
-                } 
-           }
-        }
-        selectedButton = -1;
-        planted = false;
-    }
-    */
-
-    public ArrayList<Sun> getActiveSuns() {
-        return activeSuns;
-    }
-
-    public void setActiveSuns(ArrayList<Sun> activeSuns) {
-        this.activeSuns = activeSuns;
-    }
+    private volatile int screenX = 0;
+    private volatile int screenY = 0;
+    private volatile int xMouse = 0;
+    private volatile int yMouse = 0;
 
     @Override
-    public void mouseDragged(MouseEvent e) {
+    public void mouseClicked(MouseEvent e) {
         // TODO Auto-generated method stub
         
     }
 
     @Override
+    public void mousePressed(MouseEvent e) {
+        screenX = e.getXOnScreen();
+        screenY = e.getYOnScreen();
+
+        xMouse = getX();
+        yMouse = getY();
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        int deltaX = e.getXOnScreen() - screenX;
+        int deltaY = e.getYOnScreen() - screenY;
+
+        setLocation(xMouse + deltaX, yMouse + deltaY);
+    }
+
+    @Override
     public void mouseMoved(MouseEvent e) {
-        xMouse = e.getX();
-        yMouse = e.getY();
+        // TODO Auto-generated method stub
+        
+    }
+
+    private Play.PlantType active = Play.PlantType.None;
+
+    public Play.PlantType getActivePlantingBrush() {
+        return active;
+    }
+
+    public void setActivePlantingBrush(Play.PlantType active) {
+        this.active = active;
     }
 }
+    
+    

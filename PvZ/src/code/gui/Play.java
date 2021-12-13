@@ -30,7 +30,7 @@ public class Play extends JFrame {
         sun.setLocation(15, 55);
         sun.setSize(120, 35);
 
-        Background bg = new Background(sun);
+        GamePanel bg = new GamePanel(sun);
         bg.setLocation(0, 0);
 
         getLayeredPane().add(bg, new Integer(0));
