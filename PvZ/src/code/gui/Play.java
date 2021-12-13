@@ -22,6 +22,7 @@ public class Play extends JFrame {
         setSize(1316, 806);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(null);
+        setVisible(true);
         setResizable(false);
 
         JLabel sun = new JLabel("SUN");
@@ -73,7 +74,7 @@ public class Play extends JFrame {
 
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
-            new Play().setVisible(true);
+            new Play();
         });
     }
 }
